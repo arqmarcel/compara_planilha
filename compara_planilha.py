@@ -1,18 +1,33 @@
 import pandas as pd
 
 def comparar_estrutura_excel(arquivo_original, novo_arquivo):
-    # Carregando as bases (original e nova)
-    try:
-        df_model = pd.read_excel(arquivo_original)
-        df_new = pd.read_excel(novo_arquivo)
-    except FileNotFoundError:
-        print("Erro: Um ou ambos os arquivos não foram encontrados.")
-        return
-    except ValueError:
-        print("Erro: Problema ao ler os arquivos. Verifique se são arquivos Excel válidos.")
-        return
-    except Exception as e:
-        print(f"Erro inesperado ao carregar os arquivos: {e}")
+    # Função auxiliar para carregar arquivos
+    def carregar_arquivo(caminho):
+        try:
+            if caminho.endswith('.xlsx') or caminho.endswith('.xls'):
+                return pd.read_excel(caminho)
+            elif caminho.endswith('.csv'):
+                return pd.read_csv(caminho)
+            elif caminho.endswith('.json'):
+                return pd.read_json(caminho)
+            else:
+                print(f"Erro: Formato de arquivo não suportado ({caminho}).")
+                return None
+        except FileNotFoundError:
+            print(f"Erro: O arquivo {caminho} não foi encontrado.")
+            return None
+        except ValueError:
+            print(f"Erro: Problema ao ler o arquivo {caminho}. Verifique se o formato é válido.")
+            return None
+        except Exception as e:
+            print(f"Erro inesperado ao carregar o arquivo {caminho}: {e}")
+            return None
+
+    # Carregando os arquivos
+    df_model = carregar_arquivo(arquivo_original)
+    df_new = carregar_arquivo(novo_arquivo)
+
+    if df_model is None or df_new is None:
         return
 
     if df_model.columns.equals(df_new.columns):
@@ -33,4 +48,4 @@ def comparar_estrutura_excel(arquivo_original, novo_arquivo):
         print("Ordem no novo arquivo:", list(df_new.columns))
 
 # Usando a função
-comparar_estrutura_excel('arquivo_original.xlsx', 'novo_arquivo.xlsx')
+comparar_estrutura_excel('arquivo_original.xlsx', 'novo_arquivo.csv')
