@@ -1,30 +1,55 @@
 import pandas as pd
 
 
-def comparar_estrutura_excel(arquivo_original, novo_arquivo):
+def carregar_arquivo(caminho):
     """
-    Compara a estrutura de duas planilhas Excel, verificando suas colunas.
+    Função auxiliar para carregar diferentes formatos de arquivo.
     
     Args:
-        arquivo_original (str): Caminho para o arquivo Excel original
-        novo_arquivo (str): Caminho para o novo arquivo Excel
+        caminho (str): Caminho para o arquivo a ser carregado
         
     Returns:
-        None: Imprime os resultados da comparação
+        pandas.DataFrame: DataFrame carregado ou None em caso de erro
     """
-    # Carregando as bases (original e nova)
     try:
-        df_model = pd.read_excel(arquivo_original)
-        df_new = pd.read_excel(novo_arquivo)
+        if caminho.endswith('.xlsx') or caminho.endswith('.xls'):
+            return pd.read_excel(caminho)
+        elif caminho.endswith('.csv'):
+            return pd.read_csv(caminho)
+        elif caminho.endswith('.json'):
+            return pd.read_json(caminho)
+        else:
+            print(f"Erro: Formato de arquivo não suportado ({caminho}).")
+            return None
     except FileNotFoundError:
-        print("Erro: Um ou ambos os arquivos não foram encontrados.")
-        return
+        print(f"Erro: O arquivo {caminho} não foi encontrado.")
+        return None
     except ValueError:
-        print("Erro: Problema ao ler os arquivos. Verifique se são arquivos Excel válidos.")
-        return
+        print(f"Erro: Problema ao ler o arquivo {caminho}. Verifique se o formato é válido.")
+        return None
     except Exception as e:
-        print(f"Erro inesperado ao carregar os arquivos: {e}")
-        return
+        print(f"Erro inesperado ao carregar o arquivo {caminho}: {e}")
+        return None
+
+
+def comparar_estrutura_arquivos(arquivo_original, novo_arquivo):
+    """
+    Compara a estrutura de dois arquivos (Excel, CSV ou JSON), verificando suas colunas.
+    
+    Args:
+        arquivo_original (str): Caminho para o arquivo original
+        novo_arquivo (str): Caminho para o novo arquivo
+        
+    Returns:
+        bool: True se a comparação foi realizada com sucesso, False caso contrário
+    """
+    # Carregando os arquivos
+    df_model = carregar_arquivo(arquivo_original)
+    df_new = carregar_arquivo(novo_arquivo)
+    
+    # Verificando se os arquivos foram carregados com sucesso
+    if df_model is None or df_new is None:
+        return False
     
     # Comparando colunas
     if df_model.columns.equals(df_new.columns):
@@ -46,8 +71,11 @@ def comparar_estrutura_excel(arquivo_original, novo_arquivo):
         
         print("Ordem no arquivo original:", list(df_model.columns))
         print("Ordem no novo arquivo:", list(df_new.columns))
+    
+    return True
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
-    # comparar_estrutura_excel("arquivo_original.xlsx", "arquivo_novo.xlsx")
+    # Exemplo de uso com diferentes formatos de arquivo
+    # comparar_estrutura_arquivos("dados_originais.xlsx", "dados_novos.csv")
+    # comparar_estrutura_arquivos("dados_originais.json", "dados_novos.xlsx")
